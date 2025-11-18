@@ -8,4 +8,5 @@ library Errors {
     error StableCoin__TokenAddressesAndPriceFeedAddressesMustBeOfSameLength();
     error StableCoin__TokenNotAllowed();
     error StableCoin__TransferFailed();
+    error StableCoin__HealthFactorIsBroken(uint256 healthFactor);
 }
