@@ -73,6 +73,12 @@ contract StableCoinEngine is ReentrancyGuard {
     // check if collateral > StableCoin amount
     function mintDsc(uint256 amountStcToMint) external moreThanZero(amountStcToMint) nonReentrant {
         s_stableCoinMinted[msg.sender] += amountStcToMint;
+        revertIfHealthFactorIsBroken(msg.sender);
+
+        bool minted = i_stableCoin.mint(msg.sender, amountStcToMint);
+        if (!minted) {
+            revert Errors.StableCoin__MintFailed();
+        }
     }
 
     function burnDsc() external {}
