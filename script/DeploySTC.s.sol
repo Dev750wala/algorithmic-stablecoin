@@ -7,17 +7,31 @@ import {StableCoin} from "../src/StableCoin.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
 contract DeploySTC is Script {
-    function run() external returns (StableCoin, StableCoinEngine) {
+    address[] public tokenAddresses;
+    address[] public priceFeedAddresses;
+
+
+    function run() external returns (StableCoin, StableCoinEngine, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
-        HelperConfig.NetworkConfig memory networkConfig = helperConfig.activeNetworkConfig();
-        vm.startBroadcast();
+
+        (address wethUsdPriceFeed, address wbtcUsdPriceFeed, address weth, address wbtc, uint256 deployerKey) =
+            helperConfig.activeNetworkConfig();
+
+        vm.startBroadcast(deployerKey);
         StableCoin stableCoin = new StableCoin();
+        
+        tokenAddresses = [weth, wbtc];
+        priceFeedAddresses = [wethUsdPriceFeed, wbtcUsdPriceFeed];
 
         StableCoinEngine stableCoinEngine = new StableCoinEngine(
-            [networkConfig.weth, networkConfig.wbtc],
-            [networkConfig.wethUsdPriceFeed, networkConfig.wbtcUsdPriceFeed],
+            tokenAddresses,
+            priceFeedAddresses,
             address(stableCoin)
         );
+
+        stableCoin.transferOwnership(address(stableCoinEngine));
         vm.stopBroadcast();
+
+        return (stableCoin, stableCoinEngine, helperConfig);
     }
 }
